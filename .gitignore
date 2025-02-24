@@ -1,0 +1,14 @@
+# Build output
+build/
+
+# Compiled Object files
+*.o
+*.obj
+
+# Compiled Fortran modules
+*.mod
+*.smod
+
+# Executables
+*.exe
+*.out

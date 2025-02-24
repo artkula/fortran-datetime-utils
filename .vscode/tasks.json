@@ -1,0 +1,68 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build and Run Fortran",
+            "type": "shell",
+            "windows": {
+                "command": "powershell",
+                "args": [
+                    "-Command",
+                    "if (-not (Test-Path -Path build/mod)) { New-Item -ItemType Directory -Force -Path build/mod }; gfortran -J${workspaceFolder}/build/mod -I${workspaceFolder}/build/mod -Wall -O3 -g -fcheck=all -o ./build/Packing ./src/*.f90 *.f90; if ($?) { ./build/Packing }"
+                ]
+            },
+            "linux": {
+                "command": "mkdir -p ./build/mod && gfortran -J${workspaceFolder}/build/mod -I${workspaceFolder}/build/mod -Wall -O3 -g -fcheck=all -o ./build/Packing ./src/*.f90 *.f90 && ./build/Packing"
+            },
+            "osx": {
+                "command": "mkdir -p ./build/mod && gfortran -J${workspaceFolder}/build/mod -I${workspaceFolder}/build/mod -Wall -O3 -g -fcheck=all -o ./build/Packing ./src/*.f90 *.f90 && ./build/Packing"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true,
+                "echo": true,
+                "focus": true,
+                "showReuseMessage": false
+            },
+            "problemMatcher": {
+                "owner": "fortran",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "message": 4
+                }
+            }
+        },
+        {
+            "label": "Clean Build",
+            "type": "shell",
+            "windows": {
+                "command": "powershell",
+                "args": [
+                    "-Command",
+                    "if (Test-Path -Path build) { Remove-Item -Path build -Recurse -Force }; New-Item -ItemType Directory -Force -Path build/mod"
+                ]
+            },
+            "linux": {
+                "command": "rm -rf ./build && mkdir -p ./build/mod"
+            },
+            "osx": {
+                "command": "rm -rf ./build && mkdir -p ./build/mod"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        }
+    ]
+}

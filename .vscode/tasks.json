@@ -5,17 +5,13 @@
             "label": "Build and Run Fortran",
             "type": "shell",
             "windows": {
-                "command": "powershell",
-                "args": [
-                    "-Command",
-                    "if (-not (Test-Path -Path build/mod)) { New-Item -ItemType Directory -Force -Path build/mod }; gfortran -J${workspaceFolder}/build/mod -I${workspaceFolder}/build/mod -Wall -O3 -g -fcheck=all -o ./build/Packing ./src/*.f90 *.f90; if ($?) { ./build/Packing }"
-                ]
+                "command": ".\\compile.bat"
             },
             "linux": {
-                "command": "mkdir -p ./build/mod && gfortran -J${workspaceFolder}/build/mod -I${workspaceFolder}/build/mod -Wall -O3 -g -fcheck=all -o ./build/Packing ./src/*.f90 *.f90 && ./build/Packing"
+                "command": "chmod +x ./compile.sh && ./compile.sh"
             },
             "osx": {
-                "command": "mkdir -p ./build/mod && gfortran -J${workspaceFolder}/build/mod -I${workspaceFolder}/build/mod -Wall -O3 -g -fcheck=all -o ./build/Packing ./src/*.f90 *.f90 && ./build/Packing"
+                "command": "chmod +x ./compile.sh && ./compile.sh"
             },
             "group": {
                 "kind": "build",

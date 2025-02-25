@@ -1,14 +1,21 @@
-# Build output
-build/
-
 # Compiled Object files
 *.o
 *.obj
 
-# Compiled Fortran modules
+# Fortran module files
 *.mod
 *.smod
 
 # Executables
 *.exe
 *.out
+Packing
+
+# Build directory
+/build/
+
+# VS Code specific files
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/settings.json

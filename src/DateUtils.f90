@@ -3,8 +3,11 @@
 !> @date February 2025
 module DateUtils
     implicit none
+    
+    ! Make only specific entities public
     private
     public :: GetDayOfWeek, IsLeapYear, ValidateDate, FormatDate
+    public :: DAYS_OF_WEEK, MONTH_NAMES, DAYS_IN_MONTH
     
     !> Days of the week array
     character(len=9), dimension(0:6), parameter :: DAYS_OF_WEEK = (/ &
@@ -114,18 +117,5 @@ contains
         
         formattedDate = yearStr // '-' // monthStr // '-' // dayStr
     end function FormatDate
-    
-    !> Get the name of a month
-    !> @param month Month number (1-12)
-    !> @return Month name
-    function GetMonthName(month) result(monthName)
-        integer, intent(in) :: month
-        character(len=9) :: monthName
-        
-        if (month >= 1 .and. month <= 12) then
-            monthName = MONTH_NAMES(month)
-        else
-            monthName = 'Invalid  '
-        end if
-    end function GetMonthName
+
 end module DateUtils

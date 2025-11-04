@@ -1,0 +1,91 @@
+# Example Rubric for Mechanics Question
+# This shows how instructors can define grading criteria
+
+question_id: "Q2"
+title: "Static Equilibrium - Beam Analysis"
+total_points: 10.0
+
+items:
+  - description: "Draw correct free body diagram with all forces labeled"
+    points: 2.0
+    required: true
+    hints:
+      - "normal force"
+      - "weight"
+      - "friction"
+    common_errors:
+      - "Missing friction force"
+      - "Incorrect force directions"
+      - "Unlabeled forces"
+    partial_credit_rules:
+      "All forces present but unlabeled": 1.5
+      "Missing one force": 1.0
+
+  - description: "Apply equilibrium conditions (ΣF=0, ΣM=0)"
+    points: 2.0
+    required: true
+    hints:
+      - "sum of forces"
+      - "sum of moments"
+      - "equilibrium"
+    common_errors:
+      - "Forgot moment equation"
+      - "Wrong sign convention"
+    partial_credit_rules:
+      "Correct setup, calculation error": 1.5
+
+  - description: "Calculate reaction forces correctly"
+    points: 3.0
+    required: true
+    hints:
+      - "reaction at A"
+      - "reaction at B"
+    common_errors:
+      - "Sign error in forces"
+      - "Unit conversion error"
+      - "Arithmetic mistake"
+    partial_credit_rules:
+      "Correct method, minor arithmetic error": 2.5
+      "Correct method, major error": 2.0
+
+  - description: "Verify solution satisfies equilibrium"
+    points: 1.0
+    required: false
+    hints:
+      - "check"
+      - "verify"
+    common_errors:
+      - "No verification shown"
+
+  - description: "Include correct units in final answer"
+    points: 1.0
+    required: true
+    hints:
+      - "units"
+      - "N"
+      - "kN"
+    common_errors:
+      - "Missing units"
+      - "Wrong units"
+
+  - description: "Present solution clearly with appropriate diagrams"
+    points: 1.0
+    required: false
+    hints:
+      - "clear"
+      - "organized"
+    common_errors:
+      - "Disorganized work"
+      - "Illegible"
+
+# Dependencies between checks
+dependencies:
+  "Q2-02": ["Q2-01"]  # Must have FBD before applying equilibrium
+  "Q2-03": ["Q2-02"]  # Must have equations before calculating
+  "Q2-04": ["Q2-03"]  # Can only verify after calculating
+
+metadata:
+  course: "MECH101"
+  topic: "Statics"
+  difficulty: "medium"
+  time_estimate_minutes: 15

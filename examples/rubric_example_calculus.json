@@ -1,0 +1,78 @@
+{
+  "question_id": "Q1",
+  "title": "Integration by Parts",
+  "total_points": 8.0,
+  "items": [
+    {
+      "description": "Identify correct u and dv for integration by parts",
+      "points": 2.0,
+      "required": true,
+      "hints": ["u", "dv", "LIATE"],
+      "common_errors": [
+        "Wrong choice of u and dv",
+        "Did not follow LIATE rule"
+      ],
+      "partial_credit_rules": {
+        "Correct strategy, wrong execution": 1.0
+      }
+    },
+    {
+      "description": "Compute du and v correctly",
+      "points": 2.0,
+      "required": true,
+      "hints": ["differentiate u", "integrate dv"],
+      "common_errors": [
+        "Differentiation error",
+        "Integration error"
+      ],
+      "partial_credit_rules": {
+        "One error out of two": 1.5
+      }
+    },
+    {
+      "description": "Apply integration by parts formula correctly",
+      "points": 2.0,
+      "required": true,
+      "hints": ["∫u dv = uv - ∫v du"],
+      "common_errors": [
+        "Sign error",
+        "Missing term"
+      ],
+      "partial_credit_rules": {
+        "Correct setup, minor error": 1.5
+      }
+    },
+    {
+      "description": "Simplify and present final answer",
+      "points": 1.5,
+      "required": true,
+      "hints": ["simplify", "combine terms"],
+      "common_errors": [
+        "Not simplified",
+        "Algebraic error"
+      ],
+      "partial_credit_rules": {
+        "Correct but not simplified": 1.0
+      }
+    },
+    {
+      "description": "Include constant of integration +C",
+      "points": 0.5,
+      "required": true,
+      "hints": ["+C", "constant"],
+      "common_errors": [
+        "Missing +C"
+      ],
+      "partial_credit_rules": {}
+    }
+  ],
+  "dependencies": {
+    "Q1-02": ["Q1-01"],
+    "Q1-03": ["Q1-02"]
+  },
+  "metadata": {
+    "course": "MATH201",
+    "topic": "Integration Techniques",
+    "difficulty": "medium"
+  }
+}

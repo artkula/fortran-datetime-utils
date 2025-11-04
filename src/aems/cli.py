@@ -80,9 +80,65 @@ def ingest(
         console.print(f"[red]Error: Rubric not found: {rubric}[/red]")
         raise typer.Exit(1)
 
-    # TODO: Implement full ingestion pipeline (M1)
-    console.print("\n[yellow]Note: Full ingestion pipeline not yet implemented (M1 milestone)[/yellow]")
-    console.print("This will be implemented in the next phase.")
+    try:
+        from aems.grading import parse_rubric, compile_rubric_file
+        from aems.pdf import extract_text
+
+        # Create output directory
+        output.mkdir(parents=True, exist_ok=True)
+
+        console.print("\n[bold]Step 1: Parsing rubric...[/bold]")
+        rubric_obj = parse_rubric(rubric)
+        console.print(f"[green]✓[/green] Parsed rubric for {rubric_obj.question_id}")
+        console.print(f"  Title: {rubric_obj.title}")
+        console.print(f"  Total points: {rubric_obj.total_points}")
+        console.print(f"  Items: {len(rubric_obj.items)}")
+
+        console.print("\n[bold]Step 2: Extracting solution text...[/bold]")
+        solution_text = extract_text(solution)
+        console.print(f"[green]✓[/green] Extracted {len(solution_text)} characters from solution")
+
+        console.print("\n[bold]Step 3: Compiling micro-checks...[/bold]")
+        checks_output = output / "checks.yaml"
+        micro_checks = compile_rubric_file(
+            rubric,
+            gold_solution_text=solution_text,
+            output_path=checks_output,
+            output_format="yaml"
+        )
+        console.print(f"[green]✓[/green] Compiled {len(micro_checks)} micro-checks")
+        console.print(f"  Saved to: {checks_output}")
+
+        # Display micro-checks summary
+        console.print("\n[bold]Micro-Checks Summary:[/bold]")
+        from rich.table import Table
+        table = Table()
+        table.add_column("ID", style="cyan")
+        table.add_column("Description", style="white")
+        table.add_column("Points", style="green")
+        table.add_column("Required", style="yellow")
+
+        for check in micro_checks:
+            table.add_row(
+                check.id,
+                check.desc[:60] + "..." if len(check.desc) > 60 else check.desc,
+                str(check.points),
+                "Yes" if not check.optional else "No"
+            )
+
+        console.print(table)
+
+        console.print(f"\n[bold green]✓ Ingestion complete![/bold green]")
+        console.print(f"\nGenerated files in {output}:")
+        console.print(f"  - checks.yaml (compiled micro-checks)")
+        console.print("\n[bold]Next step:[/bold]")
+        console.print(f"  aems mark --gold {checks_output} --input ./submissions --output ./marked")
+
+    except Exception as e:
+        console.print(f"\n[red]Error during ingestion: {e}[/red]")
+        import traceback
+        console.print(traceback.format_exc())
+        raise typer.Exit(1)
 
 
 @app.command()

@@ -63,17 +63,44 @@ pip install -e ".[dev]"
 
 ## Quick Start
 
-### 1. Ingest Gold Materials
+### 1. Create a Rubric
+
+Create a rubric file (JSON or YAML) defining grading criteria:
+
+```yaml
+# rubric.yaml
+question_id: "Q1"
+title: "Integration by Parts"
+total_points: 8.0
+items:
+  - description: "Identify correct u and dv"
+    points: 2.0
+    hints: ["u", "dv", "LIATE"]
+    common_errors: ["Wrong choice of u and dv"]
+  - description: "Compute du and v correctly"
+    points: 2.0
+  # ... more items
+```
+
+See `examples/rubric_example_mechanics.yaml` for a complete example.
+
+### 2. Ingest Gold Materials
 
 ```bash
 aems ingest \
   --exam exam.pdf \
   --solution solution.pdf \
-  --rubric rubric.json \
+  --rubric rubric.yaml \
   --output gold/
 ```
 
-### 2. Batch Mark Student Submissions
+This will:
+- Parse the rubric
+- Extract text from the solution PDF
+- Compile micro-checks with partial credit rules
+- Save to `gold/checks.yaml`
+
+### 3. Batch Mark Student Submissions
 
 ```bash
 aems mark \
@@ -212,7 +239,7 @@ aems/
 ## Milestones
 
 - [x] M0: PDF annotation spike (color-coded annotations)
-- [~] M1: Gold understanding pipeline (**OCR + Layout Detection complete**, rubric compilation pending)
+- [x] M1: Gold understanding pipeline (OCR, Layout Detection, Rubric Compilation) **✅ COMPLETE**
 - [ ] M2: Grader agent with stepwise RAG
 - [ ] M3: Batch runner + Canvas CSV export
 - [ ] M4: Reviewer UI + memory layers

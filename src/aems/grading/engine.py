@@ -12,6 +12,7 @@ from pathlib import Path
 from aems.models.exam import MicroCheck, MarkResult, Verdict, ProviderMetadata
 from aems.providers import LLMProvider, LLMMessage, get_provider
 from aems.models.annotations import BBox
+from aems.memory import MemoryStore
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +53,9 @@ For each check, provide:
         self,
         provider: Optional[LLMProvider] = None,
         temperature: float = 0.2,
+        memory_store: Optional[MemoryStore] = None,
+        course_id: Optional[str] = None,
+        exam_id: Optional[str] = None,
     ):
         """
         Initialize grading engine.
@@ -59,10 +63,18 @@ For each check, provide:
         Args:
             provider: LLM provider (if None, uses default from config)
             temperature: Temperature for grading (low for determinism)
+            memory_store: Optional memory store for retrieving past learnings
+            course_id: Course identifier for memory context
+            exam_id: Exam identifier for memory context
         """
         self.provider = provider or get_provider()
         self.temperature = temperature
+        self.memory_store = memory_store
+        self.course_id = course_id
+        self.exam_id = exam_id
         logger.info(f"Initialized grading engine with {self.provider.model}")
+        if memory_store:
+            logger.info(f"Memory integration enabled for course={course_id}, exam={exam_id}")
 
     def grade_check(
         self,
@@ -177,6 +189,17 @@ For each check, provide:
             prompt_parts.append(f"\n**COMMON ERRORS TO CHECK FOR:**")
             for error in micro_check.failure_modes:
                 prompt_parts.append(f"- {error}")
+
+        # Memory context from past learnings
+        if self.memory_store and self.course_id and self.exam_id:
+            memory_context = self.memory_store.get_relevant_context(
+                course_id=self.course_id,
+                exam_id=self.exam_id,
+                question_id=micro_check.question_id,
+                check_id=micro_check.id,
+            )
+            if memory_context:
+                prompt_parts.append(f"\n{memory_context}")
 
         # Student work
         prompt_parts.append(f"\n**STUDENT WORK:**")

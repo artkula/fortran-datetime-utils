@@ -113,9 +113,23 @@ aems mark \
 
 ### 3. Review and Improve
 
+Launch the web-based reviewer interface:
+
 ```bash
-aems review --marked marked/
+aems review marked/ \
+  --memory memory/ \
+  --course "PHYS-101" \
+  --exam "Midterm-2024" \
+  --port 5000
 ```
+
+This will:
+- Start a local web server at `http://localhost:5000`
+- Display all marked submissions with PDF viewer
+- Allow overriding grades with rationale
+- Enable "Improve checking" feedback submission
+- Store learnings in memory layers for future grading
+- Support side-by-side comparison of grading results
 
 ### 4. Export Grades to Canvas
 
@@ -246,13 +260,39 @@ aems/
 └── docs/
 ```
 
+## Memory Layers
+
+AEMS implements a four-tier memory system for continuous improvement:
+
+### Course Level
+- General grading policies and standards
+- Cross-exam patterns and equivalences
+- Common misconceptions across topics
+
+### Exam Level
+- Exam-specific grading guidelines
+- Typical solution approaches
+- Frequent error patterns
+
+### Question Level
+- Question-specific equivalences (e.g., "F=ma" ≡ "Force equals mass times acceleration")
+- Common alternative solutions
+- Partial credit rules refined through feedback
+
+### User Level
+- Individual grader preferences
+- Calibration data
+- Review history
+
+Memories are stored in human-readable YAML files and automatically integrated into grading prompts to improve accuracy and consistency over time.
+
 ## Milestones
 
 - [x] M0: PDF annotation spike (color-coded annotations) **✅ COMPLETE**
 - [x] M1: Gold understanding pipeline (OCR, Layout Detection, Rubric Compilation) **✅ COMPLETE**
 - [x] M2: Grader agent with stepwise RAG (Providers, GradingEngine, BatchGrader) **✅ COMPLETE**
 - [x] M3: Canvas CSV export (CanvasExporter, export command) **✅ COMPLETE**
-- [ ] M4: Reviewer UI + memory layers
+- [x] M4: Reviewer UI + memory layers **✅ COMPLETE**
 
 ## License
 

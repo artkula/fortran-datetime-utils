@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review: {{ submission.student_name }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* PDF Panel */
+        .pdf-panel {
+            flex: 1;
+            background: #2c3e50;
+            display: flex;
+            flex-direction: column;
+        }
+        .pdf-header {
+            background: #34495e;
+            padding: 15px 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pdf-viewer {
+            flex: 1;
+            overflow: auto;
+        }
+        #pdf-embed {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Review Panel */
+        .review-panel {
+            width: 450px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+        }
+        .review-header {
+            padding: 20px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        .student-info h2 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .student-id {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .score-summary {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .score-summary .score {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .checks-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .check-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+        }
+        .check-item.correct { border-left-color: #27ae60; }
+        .check-item.incorrect { border-left-color: #e74c3c; }
+        .check-item.uncertain { border-left-color: #f39c12; }
+
+        .check-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+        .check-id {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        .check-verdict {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .check-verdict.CORRECT { background: #d4edda; color: #155724; }
+        .check-verdict.INCORRECT { background: #f8d7da; color: #721c24; }
+        .check-verdict.PARTIAL { background: #fff3cd; color: #856404; }
+        .check-verdict.UNCERTAIN { background: #ffe5cc; color: #cc5500; }
+
+        .check-desc {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        .check-points {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        .check-rationale {
+            font-size: 13px;
+            color: #666;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .check-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 11px;
+        }
+        .btn-override {
+            background: #3498db;
+            color: white;
+        }
+        .btn-override:hover {
+            background: #2980b9;
+        }
+        .btn-feedback {
+            background: #95a5a6;
+            color: white;
+        }
+        .btn-feedback:hover {
+            background: #7f8c8d;
+        }
+
+        /* Navigation */
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-nav {
+            padding: 8px 16px;
+            background: #95a5a6;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .btn-nav:hover {
+            background: #7f8c8d;
+        }
+        .btn-back {
+            background: #34495e;
+        }
+        .btn-back:hover {
+            background: #2c3e50;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .modal-header {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 16px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 6px;
+        }
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .btn-cancel {
+            background: #95a5a6;
+            color: white;
+        }
+        .btn-submit {
+            background: #27ae60;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="pdf-panel">
+        <div class="pdf-header">
+            <h3>{{ submission.student_name }} - Marked Submission</h3>
+            <div class="nav-buttons">
+                <a href="/" class="btn-nav btn-back">← Back to List</a>
+                {% if prev_sub %}
+                <a href="/submission/{{ prev_sub.student_id }}" class="btn-nav">← Prev</a>
+                {% endif %}
+                {% if next_sub %}
+                <a href="/submission/{{ next_sub.student_id }}" class="btn-nav">Next →</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="pdf-viewer">
+            {% if submission.pdf_path %}
+            <embed id="pdf-embed" src="/pdf/{{ submission.student_id }}" type="application/pdf">
+            {% else %}
+            <div style="color: white; padding: 40px; text-align: center;">
+                <p>PDF not found for this submission.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="review-panel">
+        <div class="review-header">
+            <div class="student-info">
+                <h2>{{ submission.student_name }}</h2>
+                <div class="student-id">ID: {{ submission.student_id }}</div>
+            </div>
+            <div class="score-summary">
+                <div class="score">
+                    {{ "%.1f"|format(submission.grade.total_points) }} / {{ "%.1f"|format(submission.grade.total_possible) }}
+                </div>
+                <div style="color: #7f8c8d; font-size: 14px;">
+                    {{ "%.0f"|format(submission.grade.total_points / submission.grade.total_possible * 100 if submission.grade.total_possible > 0 else 0) }}%
+                </div>
+            </div>
+        </div>
+
+        <div class="checks-list">
+            {% for mark_result in submission.grade.mark_results %}
+            <div class="check-item {{ mark_result.verdict.value.lower() }}">
+                <div class="check-header">
+                    <span class="check-id">{{ mark_result.check.id }}</span>
+                    <span class="check-verdict {{ mark_result.verdict.value }}">{{ mark_result.verdict.value }}</span>
+                </div>
+                <div class="check-desc">{{ mark_result.check.description }}</div>
+                <div class="check-points">
+                    {{ "%.1f"|format(mark_result.points_awarded) }} / {{ "%.1f"|format(mark_result.check.points) }} pts
+                </div>
+                {% if mark_result.rationale %}
+                <div class="check-rationale">{{ mark_result.rationale }}</div>
+                {% endif %}
+                <div class="check-actions">
+                    <button class="btn btn-sm btn-override"
+                            onclick="openOverrideModal('{{ submission.student_id }}', '{{ mark_result.check.id }}', '{{ mark_result.check.question_id }}', '{{ mark_result.verdict.value }}', {{ mark_result.points_awarded }}, {{ mark_result.check.points }})">
+                        Override
+                    </button>
+                    <button class="btn btn-sm btn-feedback"
+                            onclick="openFeedbackModal('{{ mark_result.check.id }}', '{{ mark_result.check.question_id }}')">
+                        Improve Checking
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Override Modal -->
+    <div id="override-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Override Grade</div>
+            <form id="override-form">
+                <input type="hidden" id="override-student-id">
+                <input type="hidden" id="override-check-id">
+                <input type="hidden" id="override-question-id">
+
+                <div class="form-group">
+                    <label class="form-label">New Verdict</label>
+                    <select id="override-verdict" class="form-select">
+                        <option value="CORRECT">Correct</option>
+                        <option value="PARTIAL">Partial</option>
+                        <option value="INCORRECT">Incorrect</option>
+                        <option value="UNCERTAIN">Uncertain</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Points <span id="points-max"></span></label>
+                    <input type="number" id="override-points" class="form-input" step="0.5" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Rationale (why override?)</label>
+                    <textarea id="override-rationale" class="form-textarea" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Your Name</label>
+                    <input type="text" id="override-reviewer" class="form-input" placeholder="Optional">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('override-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-submit">Submit Override</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Improve Checking</div>
+            <form id="feedback-form">
+                <input type="hidden" id="feedback-check-id">
+                <input type="hidden" id="feedback-question-id">
+
+                <div class="form-group">
+                    <label class="form-label">Feedback Type</label>
+                    <select id="feedback-type" class="form-select">
+                        <option value="improve_checking">General Improvement</option>
+                        <option value="equivalence">Add Equivalence Rule</option>
+                        <option value="clarification">Clarify Rubric</option>
+                        <option value="common_error">Document Common Error</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Feedback</label>
+                    <textarea id="feedback-text" class="form-textarea" required placeholder="Describe how to improve the grading for this check..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Your Name</label>
+                    <input type="text" id="feedback-reviewer" class="form-input" placeholder="Optional">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('feedback-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-submit">Submit Feedback</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Modal functions
+        function openOverrideModal(studentId, checkId, questionId, currentVerdict, currentPoints, maxPoints) {
+            document.getElementById('override-student-id').value = studentId;
+            document.getElementById('override-check-id').value = checkId;
+            document.getElementById('override-question-id').value = questionId;
+            document.getElementById('override-verdict').value = currentVerdict;
+            document.getElementById('override-points').value = currentPoints;
+            document.getElementById('override-points').max = maxPoints;
+            document.getElementById('points-max').textContent = `(max: ${maxPoints})`;
+            document.getElementById('override-modal').classList.add('show');
+        }
+
+        function openFeedbackModal(checkId, questionId) {
+            document.getElementById('feedback-check-id').value = checkId;
+            document.getElementById('feedback-question-id').value = questionId;
+            document.getElementById('feedback-modal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // Override form submission
+        document.getElementById('override-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const data = {
+                student_id: document.getElementById('override-student-id').value,
+                check_id: document.getElementById('override-check-id').value,
+                verdict: document.getElementById('override-verdict').value,
+                points: parseFloat(document.getElementById('override-points').value),
+                rationale: document.getElementById('override-rationale').value,
+                reviewer_name: document.getElementById('override-reviewer').value || 'anonymous',
+            };
+
+            const response = await fetch('/api/override', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+                alert('Override submitted successfully!');
+                location.reload();
+            } else {
+                alert('Error submitting override');
+            }
+
+            closeModal('override-modal');
+        });
+
+        // Feedback form submission
+        document.getElementById('feedback-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const data = {
+                check_id: document.getElementById('feedback-check-id').value,
+                question_id: document.getElementById('feedback-question-id').value,
+                type: document.getElementById('feedback-type').value,
+                feedback: document.getElementById('feedback-text').value,
+                reviewer_name: document.getElementById('feedback-reviewer').value || 'anonymous',
+            };
+
+            const response = await fetch('/api/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+                alert('Feedback submitted successfully!');
+                document.getElementById('feedback-text').value = '';
+            } else {
+                alert('Error submitting feedback');
+            }
+
+            closeModal('feedback-modal');
+        });
+
+        // Close modals on background click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal(modal.id);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

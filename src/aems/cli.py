@@ -22,6 +22,8 @@ from rich.table import Table
 from aems.pdf.annotator import create_demo_annotations
 from aems.pdf.reader import PDFReader
 from aems.export.canvas import CanvasExporter
+from aems.reviewer import ReviewerApp
+from aems.memory import MemoryStore
 
 # Initialize Typer app and Rich console
 app = typer.Typer(
@@ -250,19 +252,55 @@ def mark(
 @app.command()
 def review(
     marked_dir: Path = typer.Argument(..., help="Directory with marked PDFs"),
+    memory_dir: Path = typer.Option("./memory", "--memory", "-m", help="Directory for storing memories"),
+    course_id: str = typer.Option("default", "--course", "-c", help="Course identifier"),
+    exam_id: str = typer.Option("default", "--exam", "-e", help="Exam identifier"),
+    host: str = typer.Option("127.0.0.1", "--host", help="Host to bind to"),
+    port: int = typer.Option(5000, "--port", "-p", help="Port to listen on"),
 ) -> None:
     """
     Launch reviewer UI for human-in-the-loop feedback.
 
     Opens a web interface where graders can review AI markings, override decisions,
     and provide feedback to improve the system.
+
+    The reviewer UI provides:
+    - Side-by-side PDF viewing with grading results
+    - Override functionality with rationale capture
+    - "Improve checking" feedback submission
+    - Memory layer integration for continuous improvement
     """
     console.print("[bold blue]AEMS Reviewer UI[/bold blue]")
-    console.print(f"Marked dir: {marked_dir}")
 
-    # TODO: Implement reviewer UI (M4)
-    console.print("\n[yellow]Note: Reviewer UI not yet implemented (M4 milestone)[/yellow]")
-    console.print("This will be implemented in the next phase.")
+    # Validate marked directory
+    if not marked_dir.exists():
+        console.print(f"[red]Error: Marked directory not found: {marked_dir}[/red]")
+        raise typer.Exit(1)
+
+    if not marked_dir.is_dir():
+        console.print(f"[red]Error: Path is not a directory: {marked_dir}[/red]")
+        raise typer.Exit(1)
+
+    # Create reviewer app
+    try:
+        app = ReviewerApp(
+            marked_dir=marked_dir,
+            memory_dir=memory_dir,
+            course_id=course_id,
+            exam_id=exam_id,
+            host=host,
+            port=port,
+        )
+
+        console.print(f"[green]✓[/green] Loaded {len(app.submissions)} submissions")
+        console.print(f"[green]✓[/green] Memory storage: {memory_dir}")
+
+        # Run the server
+        app.run(debug=False)
+
+    except Exception as e:
+        console.print(f"[red]Error starting reviewer: {e}[/red]")
+        raise typer.Exit(1)
 
 
 @app.command()

@@ -8,4 +8,25 @@ Maintains four layers:
 - User: User/grader preferences
 """
 
-# Placeholder for future implementation (M4)
+from .models import (
+    Memory,
+    MemoryLevel,
+    MemoryQuery,
+    FeedbackType,
+    EquivalenceRule,
+    GradingPolicy,
+    CommonError,
+)
+from .store import MemoryStore, generate_memory_id
+
+__all__ = [
+    "Memory",
+    "MemoryLevel",
+    "MemoryQuery",
+    "FeedbackType",
+    "EquivalenceRule",
+    "GradingPolicy",
+    "CommonError",
+    "MemoryStore",
+    "generate_memory_id",
+]

@@ -161,9 +161,89 @@ def mark(
     console.print(f"Output dir: {output_dir}")
     console.print(f"Provider: {provider} (temperature={temperature})")
 
-    # TODO: Implement batch marking (M2/M3)
-    console.print("\n[yellow]Note: Batch marking not yet implemented (M2/M3 milestones)[/yellow]")
-    console.print("This will be implemented in the next phase.")
+    # Validate inputs
+    if not gold.exists():
+        console.print(f"[red]Error: Checks file not found: {gold}[/red]")
+        raise typer.Exit(1)
+    if not input_dir.exists():
+        console.print(f"[red]Error: Input directory not found: {input_dir}[/red]")
+        raise typer.Exit(1)
+
+    try:
+        from aems.grading.batch import BatchGrader
+
+        console.print("\n[bold]Step 1: Initializing batch grader...[/bold]")
+        grader = BatchGrader(
+            checks_path=gold,
+            provider_type=provider,
+            temperature=temperature,
+        )
+        console.print(f"[green]✓[/green] Loaded {len(grader.micro_checks)} micro-checks")
+
+        console.print("\n[bold]Step 2: Finding student submissions...[/bold]")
+        pdf_files = list(input_dir.glob("*.pdf"))
+        if not pdf_files:
+            console.print(f"[yellow]No PDF files found in {input_dir}[/yellow]")
+            raise typer.Exit(0)
+
+        console.print(f"[green]✓[/green] Found {len(pdf_files)} submissions")
+
+        console.print("\n[bold]Step 3: Grading submissions...[/bold]")
+        console.print("[dim](This may take a few minutes depending on number of submissions)[/dim]\n")
+
+        grades = grader.grade_batch(
+            input_dir=input_dir,
+            output_dir=output_dir,
+        )
+
+        console.print(f"\n[bold green]✓ Grading complete![/bold green]")
+        console.print(f"\nProcessed: {len(grades)}/{len(pdf_files)} submissions")
+
+        # Display summary
+        console.print("\n[bold]Summary:[/bold]")
+        from rich.table import Table
+        table = Table()
+        table.add_column("Student ID", style="cyan")
+        table.add_column("Score", style="white")
+        table.add_column("Percentage", style="green")
+        table.add_column("Review?", style="yellow")
+
+        for grade in grades:
+            percentage = (grade.total_points / grade.total_possible * 100) if grade.total_possible > 0 else 0
+            needs_review = "Yes" if grade.needs_review else "No"
+
+            table.add_row(
+                grade.student_id,
+                f"{grade.total_points:.1f}/{grade.total_possible:.1f}",
+                f"{percentage:.1f}%",
+                needs_review,
+            )
+
+        console.print(table)
+
+        # Show statistics
+        avg_score = sum(g.total_points for g in grades) / len(grades) if grades else 0
+        avg_pct = sum((g.total_points / g.total_possible * 100) for g in grades) / len(grades) if grades else 0
+        needs_review_count = sum(1 for g in grades if g.needs_review)
+
+        console.print(f"\n[bold]Statistics:[/bold]")
+        console.print(f"  Average score: {avg_score:.1f} points ({avg_pct:.1f}%)")
+        console.print(f"  Needs review: {needs_review_count}/{len(grades)} submissions")
+
+        console.print(f"\n[bold]Output:[/bold]")
+        console.print(f"  Annotated PDFs: {output_dir}")
+        console.print(f"  Results summary: {output_dir}/results.yaml")
+
+        console.print("\n[bold]Next steps:[/bold]")
+        if needs_review_count > 0:
+            console.print(f"  1. Review {needs_review_count} submissions marked with uncertainty")
+        console.print(f"  2. Export grades: aems export --input {output_dir} --format canvas")
+
+    except Exception as e:
+        console.print(f"\n[red]Error during grading: {e}[/red]")
+        import traceback
+        console.print(traceback.format_exc())
+        raise typer.Exit(1)
 
 
 @app.command()

@@ -295,6 +295,105 @@ def demo_ocr(
         raise typer.Exit(1)
 
 
+@demo_app.command("layout")
+def demo_layout(
+    pdf_file: Path = typer.Argument(..., help="PDF file to analyze"),
+    page: int = typer.Option(0, "--page", "-p", help="Page number (0-indexed)"),
+    show_blocks: bool = typer.Option(True, "--blocks", help="Show detected blocks"),
+    show_questions: bool = typer.Option(True, "--questions", help="Show detected questions"),
+) -> None:
+    """
+    Demonstrate layout detection on a PDF.
+
+    This shows detected blocks, questions, and document structure.
+    """
+    console.print(f"[bold blue]AEMS Demo: Layout Detection (M1)[/bold blue]\n")
+
+    if not pdf_file.exists():
+        console.print(f"[red]Error: PDF not found: {pdf_file}[/red]")
+        raise typer.Exit(1)
+
+    try:
+        from aems.pdf.layout import LayoutDetector, BlockType
+
+        detector = LayoutDetector()
+
+        # Detect blocks
+        if show_blocks:
+            console.print(f"[bold]Detecting blocks on page {page}...[/bold]")
+            blocks = detector.detect_blocks(pdf_file, page)
+
+            # Create summary table
+            from rich.table import Table
+
+            table = Table(title=f"Layout Blocks (Page {page})")
+            table.add_column("ID", style="cyan")
+            table.add_column("Type", style="magenta")
+            table.add_column("Position", style="white")
+            table.add_column("Text Preview", style="green")
+
+            for block in blocks:
+                text_preview = block.text[:50] + "..." if len(block.text) > 50 else block.text
+                text_preview = text_preview.replace("\n", " ")
+
+                table.add_row(
+                    str(block.block_id),
+                    block.block_type.value,
+                    f"({block.bbox.x0:.0f}, {block.bbox.y0:.0f})",
+                    text_preview,
+                )
+
+            console.print(table)
+            console.print(f"\n[green]✓[/green] Found {len(blocks)} blocks")
+
+            # Count by type
+            type_counts = {}
+            for block in blocks:
+                type_counts[block.block_type.value] = type_counts.get(block.block_type.value, 0) + 1
+
+            console.print("\n[bold]Block Types:[/bold]")
+            for block_type, count in sorted(type_counts.items()):
+                console.print(f"  {block_type}: {count}")
+
+        # Detect questions
+        if show_questions:
+            console.print(f"\n[bold]Detecting questions on page {page}...[/bold]")
+            questions = detector.detect_questions(pdf_file, page)
+
+            if questions:
+                console.print(f"\n[green]✓[/green] Found {len(questions)} questions\n")
+
+                for q in questions:
+                    console.print(f"[bold cyan]{q.question_id}[/bold cyan]")
+                    console.print(f"  Position: ({q.bbox.x0:.0f}, {q.bbox.y0:.0f})")
+                    console.print(f"  Blocks: {len(q.blocks)}")
+                    text_preview = q.text[:100] + "..." if len(q.text) > 100 else q.text
+                    console.print(f"  Text: {text_preview}")
+                    console.print()
+            else:
+                console.print(f"[yellow]No questions detected on page {page}[/yellow]")
+
+        # Show document structure summary
+        console.print("\n[bold]Analyzing full document structure...[/bold]")
+        structure = detector.analyze_document_structure(pdf_file)
+
+        console.print(f"\n[bold]Document Summary:[/bold]")
+        console.print(f"  Total pages: {structure['pages']}")
+        console.print(f"  Total questions: {structure['total_questions']}")
+        console.print(f"  Has headers: {'Yes' if structure['has_headers'] else 'No'}")
+        console.print(f"  Has footers: {'Yes' if structure['has_footers'] else 'No'}")
+
+        console.print("\n[bold]Questions per page:[/bold]")
+        for page_num, count in structure['questions_by_page'].items():
+            console.print(f"  Page {page_num}: {count} question(s)")
+
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+        import traceback
+        console.print(traceback.format_exc())
+        raise typer.Exit(1)
+
+
 @app.command()
 def version() -> None:
     """Show AEMS version information."""

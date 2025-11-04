@@ -123,6 +123,16 @@ aems demo ocr examples/sample_exam_submission.pdf --page 0 --lang eng
 aems demo ocr my_image.png --lang eng+swe
 ```
 
+### M1 Demo: Layout Detection
+
+```bash
+# Analyze PDF layout and detect questions
+aems demo layout examples/sample_exam_submission.pdf --page 0
+
+# Show only questions (hide blocks)
+aems demo layout exam.pdf --page 0 --no-blocks
+```
+
 ## Tool Schemas (Claude Messages API)
 
 AEMS is built around the Claude Messages API tool-use pattern. Available tools:
@@ -202,7 +212,7 @@ aems/
 ## Milestones
 
 - [x] M0: PDF annotation spike (color-coded annotations)
-- [~] M1: Gold understanding pipeline (**OCR complete**, layout + rubric compilation in progress)
+- [~] M1: Gold understanding pipeline (**OCR + Layout Detection complete**, rubric compilation pending)
 - [ ] M2: Grader agent with stepwise RAG
 - [ ] M3: Batch runner + Canvas CSV export
 - [ ] M4: Reviewer UI + memory layers

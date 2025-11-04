@@ -1,0 +1,100 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aems"
+version = "0.1.0"
+description = "Automated Exam Marking System - Privacy-conscious, multi-language, PDF-native exam grading with AI"
+authors = [
+    {name = "AEMS Team"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+keywords = ["exam", "grading", "marking", "ai", "ocr", "pdf", "education"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    # PDF handling
+    "pymupdf>=1.23.0",
+    "pdfplumber>=0.10.0",
+
+    # OCR & Layout
+    "pytesseract>=0.3.10",
+    "pillow>=10.0.0",
+    "opencv-python>=4.8.0",
+
+    # Data models & validation
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+
+    # CLI
+    "click>=8.1.0",
+    "rich>=13.0.0",
+    "typer>=0.9.0",
+
+    # LLM providers
+    "anthropic>=0.18.0",
+    "openai>=1.0.0",
+
+    # Utilities
+    "python-dotenv>=1.0.0",
+    "pyyaml>=6.0",
+    "requests>=2.31.0",
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+]
+
+advanced-ocr = [
+    "transformers>=4.30.0",
+    "torch>=2.0.0",
+    "pix2tex>=0.1.0",
+]
+
+layout = [
+    "layoutparser[layoutmodels,tesseract]>=0.3.4",
+    "detectron2",
+]
+
+[project.scripts]
+aems = "aems.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aems"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"

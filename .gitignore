@@ -1,0 +1,85 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Environment
+.env
+.env.local
+*.env
+
+# AEMS specific
+# Data directories (don't commit student data)
+data/
+submissions/
+marked/
+gold/
+evaluation/
+
+# Outputs
+*.log
+logs/
+output/
+exports/
+
+# Models & weights (large files)
+models/
+weights/
+*.pt
+*.pth
+*.h5
+*.ckpt
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+.cache/
+
+# Documentation builds
+docs/_build/
+docs/.doctrees/

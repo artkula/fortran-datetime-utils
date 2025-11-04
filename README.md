@@ -240,7 +240,7 @@ aems/
 
 - [x] M0: PDF annotation spike (color-coded annotations)
 - [x] M1: Gold understanding pipeline (OCR, Layout Detection, Rubric Compilation) **✅ COMPLETE**
-- [~] M2: Grader agent with stepwise RAG (**Claude API integrated**, core grading engine in progress)
+- [x] M2: Grader agent with stepwise RAG (Providers, GradingEngine, BatchGrader) **✅ COMPLETE**
 - [ ] M3: Batch runner + Canvas CSV export
 - [ ] M4: Reviewer UI + memory layers
 

@@ -117,14 +117,24 @@ aems mark \
 aems review --marked marked/
 ```
 
-### 4. Export Grades
+### 4. Export Grades to Canvas
 
 ```bash
 aems export \
   --input marked/ \
+  --output grades.csv \
   --format canvas \
-  --output grades.csv
+  --section "PHYS-101-A" \
+  --assignment "Midterm"
 ```
+
+This will:
+- Read all `*_results.yaml` files from the marked directory
+- Generate Canvas-compatible CSV with student grades
+- Include separate columns for each question (Midterm Q1, Midterm Q2, etc.)
+- Add a total score column
+- Flag submissions that need human review
+- Display summary statistics (average score, review count)
 
 ## Demo Commands
 
@@ -238,10 +248,10 @@ aems/
 
 ## Milestones
 
-- [x] M0: PDF annotation spike (color-coded annotations)
+- [x] M0: PDF annotation spike (color-coded annotations) **✅ COMPLETE**
 - [x] M1: Gold understanding pipeline (OCR, Layout Detection, Rubric Compilation) **✅ COMPLETE**
 - [x] M2: Grader agent with stepwise RAG (Providers, GradingEngine, BatchGrader) **✅ COMPLETE**
-- [ ] M3: Batch runner + Canvas CSV export
+- [x] M3: Canvas CSV export (CanvasExporter, export command) **✅ COMPLETE**
 - [ ] M4: Reviewer UI + memory layers
 
 ## License

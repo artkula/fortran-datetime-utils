@@ -21,6 +21,7 @@ from rich.table import Table
 
 from aems.pdf.annotator import create_demo_annotations
 from aems.pdf.reader import PDFReader
+from aems.export.canvas import CanvasExporter
 
 # Initialize Typer app and Rich console
 app = typer.Typer(
@@ -266,24 +267,60 @@ def review(
 
 @app.command()
 def export(
-    input_dir: Path = typer.Option(..., "--input", "-i", help="Directory with marked PDFs"),
+    input_dir: Path = typer.Option(..., "--input", "-i", help="Directory with marked PDFs and results"),
     output: Path = typer.Option("grades.csv", "--output", "-o", help="Output CSV file"),
     format: str = typer.Option("canvas", "--format", "-f", help="Export format (canvas, xlsx)"),
+    section: Optional[str] = typer.Option(None, "--section", "-s", help="Section identifier"),
+    assignment: str = typer.Option("Exam", "--assignment", "-a", help="Assignment name prefix"),
 ) -> None:
     """
     Export grades to Canvas-compatible CSV.
 
     Aggregates grading results and exports them in a format suitable for
     importing into Canvas or other Learning Management Systems.
+
+    Reads *_results.yaml files from the input directory and generates
+    a CSV file with student grades organized by question.
     """
     console.print("[bold blue]AEMS Grade Export[/bold blue]")
     console.print(f"Input dir: {input_dir}")
     console.print(f"Output: {output}")
     console.print(f"Format: {format}")
 
-    # TODO: Implement export (M3)
-    console.print("\n[yellow]Note: Export functionality not yet implemented (M3 milestone)[/yellow]")
-    console.print("This will be implemented in the next phase.")
+    # Validate input directory
+    if not input_dir.exists():
+        console.print(f"[red]Error: Input directory not found: {input_dir}[/red]")
+        raise typer.Exit(1)
+
+    if not input_dir.is_dir():
+        console.print(f"[red]Error: Input path is not a directory: {input_dir}[/red]")
+        raise typer.Exit(1)
+
+    # Currently only Canvas format is supported
+    if format.lower() != "canvas":
+        console.print(f"[yellow]Warning: Only 'canvas' format is currently supported. Ignoring format='{format}'[/yellow]")
+
+    console.print("\n[bold cyan]Step 1:[/bold cyan] Loading grading results...")
+
+    # Create exporter and process
+    exporter = CanvasExporter(section=section, assignment_name=assignment)
+    grades = exporter.load_grades_from_yaml(input_dir)
+
+    if not grades:
+        console.print("[red]Error: No grading results found in input directory[/red]")
+        console.print(f"Make sure the directory contains *_results.yaml files from the mark command")
+        raise typer.Exit(1)
+
+    console.print(f"[green]✓[/green] Loaded {len(grades)} student grades")
+
+    console.print("\n[bold cyan]Step 2:[/bold cyan] Exporting to Canvas CSV...")
+    exporter.export_with_summary(grades, output)
+
+    console.print(f"\n[bold green]✓ Export complete![/bold green]")
+    console.print(f"\n[bold]Next steps:[/bold]")
+    console.print(f"  1. Review the CSV file: {output}")
+    console.print(f"  2. Import into Canvas: Grades → Import → Upload CSV")
+    console.print(f"  3. Review any submissions marked as 'Needs Review'")
 
 
 # Demo commands

@@ -99,6 +99,30 @@ aems export \
   --output grades.csv
 ```
 
+## Demo Commands
+
+Test individual features:
+
+### M0 Demo: PDF Annotations
+
+```bash
+# Create a test PDF
+python examples/create_test_pdf.py
+
+# Add color-coded annotations
+aems demo annotate examples/sample_exam_submission.pdf
+```
+
+### M1 Demo: OCR
+
+```bash
+# Test OCR on a PDF (requires Tesseract)
+aems demo ocr examples/sample_exam_submission.pdf --page 0 --lang eng
+
+# Test OCR on an image
+aems demo ocr my_image.png --lang eng+swe
+```
+
 ## Tool Schemas (Claude Messages API)
 
 AEMS is built around the Claude Messages API tool-use pattern. Available tools:
@@ -178,7 +202,7 @@ aems/
 ## Milestones
 
 - [x] M0: PDF annotation spike (color-coded annotations)
-- [ ] M1: Gold understanding pipeline (layout + OCR + rubric compilation)
+- [~] M1: Gold understanding pipeline (**OCR complete**, layout + rubric compilation in progress)
 - [ ] M2: Grader agent with stepwise RAG
 - [ ] M3: Batch runner + Canvas CSV export
 - [ ] M4: Reviewer UI + memory layers

@@ -224,6 +224,77 @@ def demo_read(
         raise typer.Exit(1)
 
 
+@demo_app.command("ocr")
+def demo_ocr(
+    input_file: Path = typer.Argument(..., help="PDF or image file to OCR"),
+    page: int = typer.Option(0, "--page", "-p", help="Page number for PDF (0-indexed)"),
+    language: str = typer.Option("eng", "--lang", "-l", help="Language code (e.g., eng, swe, eng+swe)"),
+) -> None:
+    """
+    Demonstrate OCR functionality on a PDF or image.
+
+    This tests the OCR engine and shows extracted text with confidence scores.
+    """
+    console.print(f"[bold blue]AEMS Demo: OCR (M1)[/bold blue]\n")
+
+    if not input_file.exists():
+        console.print(f"[red]Error: File not found: {input_file}[/red]")
+        raise typer.Exit(1)
+
+    try:
+        from aems.ocr import check_tesseract_installation, get_ocr_router
+        from aems.pdf.converter import convert_pdf_page
+
+        # Check Tesseract installation
+        tesseract_info = check_tesseract_installation()
+        if not tesseract_info["installed"]:
+            console.print("[red]Error: Tesseract not installed[/red]")
+            console.print("\nPlease install Tesseract OCR:")
+            console.print("  Ubuntu/Debian: sudo apt-get install tesseract-ocr")
+            console.print("  MacOS: brew install tesseract")
+            console.print("  Windows: https://github.com/UB-Mannheim/tesseract/wiki")
+            raise typer.Exit(1)
+
+        console.print(f"[green]✓[/green] Tesseract version: {tesseract_info['version']}")
+        console.print(f"[green]✓[/green] Available languages: {len(tesseract_info['languages'])}")
+
+        # Convert PDF to image if needed
+        if input_file.suffix.lower() == ".pdf":
+            console.print(f"\nConverting PDF page {page} to image...")
+            image_path = convert_pdf_page(input_file, page)
+            console.print(f"[green]✓[/green] Image created: {image_path}")
+        else:
+            image_path = input_file
+
+        # Perform OCR
+        console.print(f"\nPerforming OCR with language: {language}")
+        router = get_ocr_router()
+        result = router.ocr_image(image_path, language=language)
+
+        # Display results
+        console.print("\n" + "=" * 70)
+        console.print("[bold]OCR Results:[/bold]")
+        console.print("=" * 70)
+        console.print(f"Engine: {result.engine.value}")
+        console.print(f"Confidence: {result.confidence:.2%}")
+        console.print(f"Text length: {len(result.text)} characters")
+        console.print(f"Language: {result.language}")
+        console.print("\n[bold]Extracted Text:[/bold]")
+        console.print("-" * 70)
+        console.print(result.text[:1000] + ("..." if len(result.text) > 1000 else ""))
+        console.print("-" * 70)
+
+        # Clean up temp image if created
+        if input_file.suffix.lower() == ".pdf" and image_path != input_file:
+            image_path.unlink(missing_ok=True)
+
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+        import traceback
+        console.print(traceback.format_exc())
+        raise typer.Exit(1)
+
+
 @app.command()
 def version() -> None:
     """Show AEMS version information."""
